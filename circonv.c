@@ -2,6 +2,7 @@
 #include "pass_types.h"
 #include "circonv.h"
 
+#if 0
 /* Cyclic convolution mod p. c = a*b (mod p)
  * Assumes all coefficient vectors are initialized and of length N.
  * Assumes c is zero, otherwise computes c += a*b (mod p).
@@ -22,7 +23,10 @@ circonv(int64 *c, const int64 *a, const int64 *b)
       c[j] += (a[i] * b[j-i+PASS_N]);
     }
   }
+
+  return 0;
 }
+#endif
 
 
 int
@@ -35,7 +39,7 @@ bsparseconv (int64 *c, const int64 *a, const b_sparse_poly *b)
   for (i = 0; i < PASS_b; i++) {
     k = b->ind[i];
 
-    if(b->val[i] == 1) {
+    if(b->val[i] > 0) {
       for (j = k; j < PASS_N; j++) {
         c[j] += a[j-k];
       }
@@ -51,5 +55,7 @@ bsparseconv (int64 *c, const int64 *a, const b_sparse_poly *b)
       }
     }
   }
+
+  return 0;
 }
 

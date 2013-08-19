@@ -6,6 +6,7 @@
 
 #include "constants.h"
 #include "pass_types.h"
+#include "poly.h"
 #include "crypto_hash_sha512.h"
 #include "formatc.h"
 #include "circonv.h"
@@ -13,11 +14,11 @@
 #include "sign.h"
 
 
-#define DEBUG 0
+#define TRIALS 10000
+
+#define MLEN 10
 
 #define CLEAR(f) memset((f), 0, PASS_N*sizeof(int64))
-
-#define NUMSIG 1000
 
 int
 main(int argc, char **argv)
@@ -25,6 +26,10 @@ main(int argc, char **argv)
 
   int i;
   int count;
+
+  long int seed = time(NULL);
+  printf("seed: %ld\n\n", seed);
+  srand(seed);
 
 #if PASS_N == 13
   int64 key[PASS_N] = {0, -1, 0, -1, -1, -1, -1, -1, 0, 0, 1, 1, -1};
@@ -34,36 +39,46 @@ main(int argc, char **argv)
   int64 key[PASS_N] = {0, -1, 0, -1, 1, -1, 0, 0, 0, 0, 0, -1, -1, -1, 1, 1, -1, 1, 0, -1, -1, -1, 0, 0, 1, 0, 1, -1, 0, 0, 1, -1, 0, 0, -1, 1, 0, -1, -1, 1, -1, 1, 0, -1, -1, -1, 1, 1, 1, 0, 0, 1, 0, 0, 0, -1, 1, -1, -1, 1, 0, 1, -1, -1, 0, -1, -1, 0, 0, 0, -1, -1, -1, 1, -1, 1, 1, 1, -1, 0, 0, 0, 1, 1, 0, -1, -1, 0, -1, 0, -1, 1, -1, 0, -1, 1, -1, -1, 0, 1, 0, 0, -1, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, -1, -1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, -1, 0, -1, 0, -1, 1, 1, 1, -1, -1, 1, 1, 0, -1, 0, -1, 0, -1, -1, -1, -1, 1, 0, -1, 1, 1, 1, 0, -1, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 1, 0, -1, -1, -1, 0, 1, -1, 1, -1, 0, 0, 1, -1, 0, 0, 1, -1, 0, 0, 1, 0, -1, 1, -1, 0, 1, 0, -1, 1, -1, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1, -1, 1, 0, -1, 0, 1, -1, 1, 1, -1, 1, -1, 0, 0, -1, -1, -1, 1, 0, -1, 0, 0, 1, 0, -1, 1, -1, 1, 0, 0, 1, 0, -1, 0, 0, 0, 0, -1, -1, -1, 1, -1, 1, -1, -1, 0, -1, 1, 1, -1, 1, -1, 0, 1, 0, 0, 1, -1, 0, -1, 1, 1, -1, 1, -1, 0, 1, -1, 1, -1, -1, 1, 1, 0, 1, 1, -1, -1, -1, -1, 1, 0, -1, 0, 0, 0, 0, -1, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, -1, 0, 1, 1, 0, -1, -1, -1, -1, 1, 1, -1, 0, -1, -1, 1, 1, 0, 1, -1, -1, 0, 0, 1, 0, 1, 0, 1, -1, -1, -1, -1, -1, 0, 1, -1, 0, 1, 1, -1, 1, 1, 0, 1, 1, -1, -1, 1, 0, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1, 0, 1, 1, -1, -1, 1, 0, 1, -1, 1, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1, -1, -1, 0, -1, 0, -1, 0, -1, -1, -1, 1, 1, 1, -1, 0, 1, 0, 0, 0, 1, 1, 1, -1, -1, 0, -1, 0, 1, 0, 0, 1, -1, -1, -1, 1, 1, 0, 0, 1, 0, -1, -1, -1, 1, 0, 1, 0, -1, 1, -1, -1, 0, -1, 0, -1, 1, -1, -1, 0, -1, 1, -1, 0, 1, -1, 1, 1, 0, 0, -1, 1, -1, -1, 0, 1, 0, 0, -1, 0, 0, 1, 0, 1, 0, 0, -1, -1, 0, 1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 0, 0, 0, -1, 0, 1, -1, -1, 0, -1, 0, 0, 0, 0, 0, -1, -1, 1, 1, 1, -1, -1, 0, 0, 1, 0, 1, -1, 1, 0, -1, 1, 0, 0, 0, 1, 1, -1, 0, -1, -1, 1, -1, -1, -1, 0, -1, -1, 0, -1, 0, -1, 0, 0, 1, 0, 1, 1, 0, -1, 1, 0, -1, -1, -1, -1, -1, 1, 0, -1, -1, 1, -1, 0, 1, 1, 0, 0, 0, 1, 0, -1, 0, 0, -1, 1, -1, 0, 1, 0, 1, 0, -1, -1, -1, 0, 0, 0, -1, 0, 0, -1, -1, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0, 0, -1, 0, 0, -1, -1, 0, 0, 0, -1, 1, 0, 1, -1, -1, 1, 1, -1, -1, -1, 0, -1, 1, 1, 1, -1, 1, 0, -1, -1, -1, -1, -1, 1, 0, -1, -1, 1, 1, 1, -1, -1, 1, 0, 1, 1, 0, 1, -1, -1, 1, -1, 0, 1, -1, 0, 1, 1, 1, 1, -1, -1, 0, -1, 1, -1, -1, 0, -1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, -1, 1, -1, 0, -1, 0, 1, -1, 0, 0, 1, -1, 0, 0, 0, -1, 1, 0, 0, 0, 1, -1, -1, 1, 1, 1, -1, 1, -1, 0, 0, 0, 1, 0, 1, 1, 1, 0, -1, -1, 1, 0, 0, -1, 0, -1, 0, 0, 1, 0, -1, -1, 0, 1, 1, 0, 1, 0, 1, -1, 0, 1, 1, 0, -1, 0, 1, 1, -1, 0, 1, -1, -1, -1, -1, 0, 1, 0};
 #endif
 
+#if VERIFY
   int64 keyhat[PASS_N] = {0};
   int64 pubkey[PASS_N] = {0};
+  int nbver = 0;
+#endif
 
-  int64 *z = malloc(sizeof(int64) * PASS_N);
+  int64 *z = malloc(PASS_N * sizeof(int64));
 
-  unsigned char in[10] = "0000000000";
+  unsigned char in[MLEN] = "0000000000";
   unsigned char h[crypto_hash_sha512_BYTES];
 
   ntt_setup();
 
+#if VERIFY
   ntt(keyhat, key);
   poly_cmod(keyhat, PASS_p);
   for(i=0; i<PASS_t; i++)
-      pubkey[points[i]] = keyhat[points[i]];
+      pubkey[S[i]] = keyhat[S[i]];
+#endif
 
   clock_t c0,c1;
   c0 = clock();
 
   count = 0;
-  for(i=0; i<NUMSIG; i++) {
-   //snprintf(in, sizeof(int), "%u", rand());
-   count += sign(h, z, key, in, 10);
-   printf("%d", (verify(h, z, pubkey, in, 10) == VALID), count);
-   fflush(stdout);
+  for(i=0; i<TRIALS; i++) {
+   snprintf((char *)in, sizeof(long int), "%ld", lrand48());
+   count += sign(h, z, key, in, MLEN);
+#if VERIFY
+   nbver += (verify(h, z, pubkey, in, MLEN) == VALID);
+#endif
   }
   printf("\n");
 
   c1 = clock();
-  printf("Average attempt: %f\n",  (((float)count)/NUMSIG));
-  printf("Time: %fs\n", (float) (c1 - c0)/(CLOCKS_PER_SEC));
+  printf("Total attempts: %d\n",  count);
+#if VERIFY
+  printf("Valid signatures: %d/%d\n",  nbver, TRIALS);
+#endif
+  printf("Attempts/sig: %f\n",  (((float)count)/TRIALS));
+  printf("Time/sig: %fs\n", (float) (c1 - c0)/(TRIALS*CLOCKS_PER_SEC));
 
 #if DEBUG
   printf("\n\nKey: ");
@@ -80,17 +95,6 @@ main(int argc, char **argv)
     printf("%lld, ", ((long long int) z[i]));
   printf("\n");
 #endif
-
-/*
-  if(verify(h, z, pubkey, in, 10) == VALID)
-      printf("\n\nOK!\n\n");
-  else
-      printf("\n\nBad Sig!\n\n");
-
-  for(i=0; i<PASS_N; i++)
-    printf("%lld, ", ((long long int) z[i]));
-  printf("\n");
-*/
 
   ntt_cleanup();
   return 0;
@@ -128,24 +132,30 @@ mknoise(int64 *y)
   return 0;
 }
 
+
 int
-hash(unsigned char *h, const int64 *eval, const unsigned char *message, const int msglen)
+hash(unsigned char *h, const int64 *y, const unsigned char *message, const int msglen)
 {
   int i;
-  int doclen = PASS_t * sizeof(int64) + msglen + 1;
-  unsigned char *in = calloc(doclen, sizeof(unsigned char));
+  int doclen = PASS_t * sizeof(int64) + msglen;
+  unsigned char *in = malloc(doclen * sizeof(unsigned char));
+  unsigned char *pos = in + msglen;
+  uint64 u;
 
-  //  printf("\n\nEval = [");
-  //for(i=0; i<PASS_t; i++) {
-  //    printf("%lld, ", eval[points[i]]);
-  //}
+  strncpy((char *)in, (const char *)message, msglen);
 
   for(i=0; i<PASS_t; i++) {
-    //snprintf(&(in[i*sizeof(int64)]), sizeof(int64), "%lld", (long long int) eval[points[i]]);
-    in[i*sizeof(int64)] = eval[points[i]];
+    u = (uint64) y[S[i]];
+    pos[7] = u; u >>= 8;
+    pos[6] = u; u >>= 8;
+    pos[5] = u; u >>= 8;
+    pos[4] = u; u >>= 8;
+    pos[3] = u; u >>= 8;
+    pos[2] = u; u >>= 8;
+    pos[1] = u; u >>= 8;
+    pos[0] = u;
+    pos += sizeof(int64);
   }
-
-  strncpy(&(in[PASS_t * sizeof(int64)]), message, msglen);
 
   crypto_hash_sha512(h, in, doclen);
 
@@ -200,7 +210,7 @@ sign(unsigned char *h, int64 *z, const int64 *key, const unsigned char *message,
 
   printf("\n\nc: ");
   for(i=0; i<PASS_b; i++)
-    printf("(%lld, %lld) ", c.ind[i], c.val[i]);
+    printf("(%lld, %lld) ", (long long int) c.ind[i], (long long int) c.val[i]);
   printf("\n");
 #endif
 
@@ -219,36 +229,18 @@ verify(const unsigned char *h, const int64 *z, const int64 *pubkey, const unsign
   int64 Fz[PASS_N] = {0};
   unsigned char h2[crypto_hash_sha512_BYTES] = {0};
 
-  //printf("ENTERED VERIFY\n");
-
   if(reject(z))
     return INVALID;
 
-  //printf("IN RANGE\n");
   formatc(&c, h);
+
   for(i=0; i<PASS_b; i++)
     rawc[c.ind[i]] = c.val[i];
 
-//printf("\n\n c = [");
-//for(i=0; i<PASS_N; i++) {
-//  printf("%d, ", rawc[i]);
-//}
-//printf("\n");
-//
-//printf("\n\n pubkey = [");
-//for(i=0; i<PASS_N; i++) {
-//  printf("%d, ", pubkey[i]);
-//}
-//printf("\n");
-
+  /* TODO: Fast evaluation for sparse polynomials */
   ntt(Fc, rawc);
-//printf("\n\n Fc = [");
-//for(i=0; i<PASS_N; i++) {
-//  printf("%d, ", Fc[i]);
-//}
-//printf("\n");
-
   ntt(Fz, z);
+
   for(i=0; i<PASS_N; i++) {
     Fz[i] -= Fc[i] * pubkey[i];
   }

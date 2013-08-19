@@ -1,19 +1,24 @@
+#if USE_FFTW
 #include <complex.h>
 #include <math.h>
 #include <fftw3.h>
+#endif
 
 #include "constants.h"
 #include "pass_types.h"
+#include "poly.h"
 #include "ntt.h"
 
+static int NTT_INITIALIZED = 0;
+
+#if USE_FFTW
 static fftwl_plan DFT;
 static fftwl_plan iDFT;
 
-static int NTT_INITIALIZED = 0;
-static long double *dpoly = NULL;
+static fftwl_real *dpoly = NULL;
 static fftwl_complex *cpoly = NULL;
-static fftwl_complex *com = NULL;
-
+static fftwl_complex *nth_roots_dft = NULL;
+#endif
 
 int
 ntt_setup() {
@@ -22,11 +27,11 @@ ntt_setup() {
   if(!NTT_INITIALIZED) {
     fftwl_import_wisdom_from_filename(PASS_WISDOM);
 
-    dpoly = (long double*) fftwl_malloc(sizeof(long double) * NTT_LEN);
-    com = (fftwl_complex*) fftwl_malloc(sizeof(fftwl_complex) * NTT_LEN);
+    dpoly = (fftwl_real*) fftwl_malloc(sizeof(fftwl_real) * NTT_LEN);
+    nth_roots_dft = (fftwl_complex*) fftwl_malloc(sizeof(fftwl_complex) * NTT_LEN);
     cpoly = (fftwl_complex*) fftwl_malloc(sizeof(fftwl_complex) * NTT_LEN);
 
-    DFTom = fftwl_plan_dft_r2c_1d(NTT_LEN, dom, com, FFTW_ESTIMATE);
+    DFTom = fftwl_plan_dft_r2c_1d(NTT_LEN, nth_roots, nth_roots_dft, FFTW_ESTIMATE);
     fftwl_execute(DFTom);
     fftwl_destroy_plan(DFTom);
 
@@ -38,6 +43,8 @@ ntt_setup() {
 #else
     NTT_INITIALIZED = 1;
 #endif
+
+  return 0;
 }
 
 int
@@ -48,13 +55,15 @@ ntt_cleanup() {
     fftwl_destroy_plan(iDFT);
     fftwl_free(dpoly);
     fftwl_free(cpoly);
-    fftwl_free(com);
+    fftwl_free(nth_roots_dft);
     fftwl_forget_wisdom();
     NTT_INITIALIZED = 0;
   }
 #else
     NTT_INITIALIZED = 0;
 #endif
+
+  return 0;
 }
 
 #if USE_FFTW
@@ -64,13 +73,13 @@ ntt(int64 *Ff, const int64 *f)
   int i;
 
   for(i=0; i<NTT_LEN; i++){
-    dpoly[i] = (long double) f[perm[i]];
+    dpoly[i] = (fftwl_real) f[perm[i]];
   }
 
   fftwl_execute(DFT); /* dpoly -> cpoly */
 
   for(i=0;i<(NTT_LEN/2)+1; i++){
-    cpoly[i] *= com[i];
+    cpoly[i] *= nth_roots_dft[i];
   }
 
   fftwl_execute(iDFT); /* cpoly -> dpoly */
@@ -80,6 +89,8 @@ ntt(int64 *Ff, const int64 *f)
   }
 
   poly_cmod(Ff, PASS_p);
+
+  return 0;
 }
 
 #else
@@ -89,15 +100,6 @@ ntt(int64 *fw, const int64 *w)
 {
   int64 i;
   int64 j;
-
-  const int64 ntt[NTT_LEN] = {
-#include PASS_RADER_POLY
-  };
-
-  const int64 perm[NTT_LEN+1] = {
-#include PASS_PERMUTATION
-    , 1
-  };
 
   /* Rader DFT: Length N-1 convolution of w (permuted according to
    * PASS_PERMUTATION) and the vector [g, g^2, g^3, ... g^N-1].
@@ -113,20 +115,18 @@ ntt(int64 *fw, const int64 *w)
     if (w[perm[i]] == 0) continue;
 
     for (j = i; j < NTT_LEN; j++) {
-      fw[perm[NTT_LEN-j]] += (w[perm[i]] * ntt[j-i]);
+      fw[perm[NTT_LEN-j]] += (w[perm[i]] * nth_roots[j-i]);
     }
 
     for (j = 0; j < i; j++) {
-      fw[perm[NTT_LEN-j]] += (w[perm[i]] * ntt[NTT_LEN+j-i]);
+      fw[perm[NTT_LEN-j]] += (w[perm[i]] * nth_roots[NTT_LEN+j-i]);
     }
   }
 
   /* fw[0] (evaluation of w at 1). */
-#if EVALUATE_AT_ONE
   for (i = 0; i < PASS_N; i++) {
     fw[0] += w[i];
   }
-#endif
 
   return 0;
 }

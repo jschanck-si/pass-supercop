@@ -12,11 +12,11 @@ static const int64 perm[NTT_LEN+1] = {
     , 1
   };
 
-static long double dom[NTT_LEN] = {
+static fftwl_real nth_roots[NTT_LEN] = {
 #include PASS_RADER_POLY
   };
 
-static const int64 points[PASS_t] = {
+static const int64 S[PASS_t] = {
 #include PASS_EVAL_POINTS
   };
 

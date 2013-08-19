@@ -1,15 +1,10 @@
 #ifndef CPASSREF_CONST_H_
 #define CPASSREF_CONST_H_
 
-#define USE_FFTW 1
-
 #define PASS_N 769
-#define EVALUATE_AT_ONE 0
-
 
 #define VALID 0
 #define INVALID 1
-
 
 #if PASS_N == 13
 #define PASS_p 53
@@ -38,22 +33,7 @@
 #endif
 
 
-#if 0
-#if PASS_N == 769
-#define PASS_p 10979783
-#define PASS_g 5201073
-#define PASS_k 16412
-#define PASS_b 29
-#define PASS_t 392
-#define PASS_RADER_POLY "data/769_rader.dat"
-#define PASS_PERMUTATION "data/769_perm.dat"
-#define PASS_EVAL_POINTS "data/769_points.dat"
-#define PASS_WISDOM "data/769_wisdom.dat"
-#endif
-#endif
 
-
-#if 1
 #if PASS_N == 769
 #define PASS_p 862819
 #define PASS_g 754192
@@ -64,7 +44,6 @@
 #define PASS_PERMUTATION "data/769_perm.dat"
 #define PASS_EVAL_POINTS "data/769_points.dat"
 #define PASS_WISDOM "data/769_wisdom.dat"
-#endif
 #endif
 
 #endif

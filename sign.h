@@ -2,9 +2,6 @@
 #define CPASSREF_SIGN_H_
 
 int
-poly_cmod(int64 *a, int64 q);
-
-int
 mknoise(int64 *y);
 
 int
