@@ -138,24 +138,22 @@ int
 hash(unsigned char *h, const int64 *y, const unsigned char *message, const int msglen)
 {
   int i;
-  int doclen = PASS_t * sizeof(int64) + msglen;
+  int doclen = PASS_t + msglen;
   unsigned char *in = malloc(doclen * sizeof(unsigned char));
   unsigned char *pos = in + msglen;
-  uint64 u;
 
   strncpy((char *)in, (const char *)message, msglen);
 
   for(i=0; i<PASS_t; i++) {
-    u = (uint64) y[S[i]];
-    pos[7] = u; u >>= 8;
-    pos[6] = u; u >>= 8;
-    pos[5] = u; u >>= 8;
-    pos[4] = u; u >>= 8;
-    pos[3] = u; u >>= 8;
-    pos[2] = u; u >>= 8;
-    pos[1] = u; u >>= 8;
-    pos[0] = u;
-    pos += sizeof(int64);
+    //pos[7] = u; u >>= 8;
+    //pos[6] = u; u >>= 8;
+    //pos[5] = u; u >>= 8;
+    //pos[4] = u; u >>= 8;
+    //pos[3] = u; u >>= 8;
+    //pos[2] = u; u >>= 8;
+    //pos[1] = u; u >>= 8;
+    *pos = (unsigned char) (y[S[i]] & 0xff);
+    pos++;
   }
 
   crypto_hash_sha512(h, in, doclen);
