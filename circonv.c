@@ -39,7 +39,7 @@ bsparseconv (int64 *c, const int64 *a, const b_sparse_poly *b)
   for (i = 0; i < PASS_b; i++) {
     k = b->ind[i];
 
-    if(b->val[i] > 0) {
+    if(b->val[k] > 0) {
       for (j = k; j < PASS_N; j++) {
         c[j] += a[j-k];
       }

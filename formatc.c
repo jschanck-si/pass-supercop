@@ -28,7 +28,7 @@ formatc(b_sparse_poly *c, const unsigned char *digest)
       used[indx] = 1;
 
       c->ind[i] = indx;
-      c->val[i] = 2 * (digest[4+i] & 1) - 1;
+      c->val[indx] = 2 * (digest[4+i] & 1) - 1;
       i++;
     }
   }

@@ -224,7 +224,6 @@ verify(const unsigned char *h, const int64 *z, const int64 *pubkey, const unsign
 {
   int i;
   b_sparse_poly c;
-  int64 rawc[PASS_N] = {0};
   int64 Fc[PASS_N] = {0};
   int64 Fz[PASS_N] = {0};
   unsigned char h2[crypto_hash_sha512_BYTES] = {0};
@@ -232,13 +231,10 @@ verify(const unsigned char *h, const int64 *z, const int64 *pubkey, const unsign
   if(reject(z))
     return INVALID;
 
+  CLEAR(c.val);
   formatc(&c, h);
 
-  for(i=0; i<PASS_b; i++)
-    rawc[c.ind[i]] = c.val[i];
-
-  /* TODO: Fast evaluation for sparse polynomials */
-  ntt(Fc, rawc);
+  ntt(Fc, c.val);
   ntt(Fz, z);
 
   for(i=0; i<PASS_N; i++) {
