@@ -28,6 +28,7 @@ main(int argc, char **argv)
   int count;
 
   long int seed = time(NULL);
+  printf("Generating %d signatures %s\n", TRIALS, VERIFY ? "and verifying" : "and not verifying");
   printf("seed: %ld\n\n", seed);
   srand(seed);
 
