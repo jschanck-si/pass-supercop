@@ -1,38 +1,59 @@
 #include <stdlib.h>
+#include <string.h>
 
+#include "crypto_hash_sha512.h"
 #include "constants.h"
 #include "pass_types.h"
 #include "formatc.h"
 
-/* XXX: Temporary hack to get up and running fast. Need a secure FormatC function !!! */
+/* TODO: Standardize a format function */
 
 int
 formatc(b_sparse_poly *c, const unsigned char *digest)
 {
   int i;
+  int j;
+  uint64 v;
   unsigned int indx;
-  unsigned char used[PASS_N] = {0};
+  unsigned char pool[HASH_BYTES];
+  unsigned char hash_state[HASH_BYTES];
 
-  unsigned int seed;
-  seed  = ((digest[0] & 0xff) << 24);
-  seed |= ((digest[1] & 0xff) << 16);
-  seed |= ((digest[2] & 0xff) << 8);
-  seed |= ((digest[3] & 0xff));
+  memcpy(pool, digest, HASH_BYTES);
 
-  srand(seed);
+/*XXX: Maximum b = 64 */
+  v =  pool[0]; v <<= 8;
+  v |= pool[1]; v <<= 8;
+  v |= pool[2]; v <<= 8;
+  v |= pool[3]; v <<= 8;
+  v |= pool[4]; v <<= 8;
+  v |= pool[5]; v <<= 8;
+  v |= pool[6]; v <<= 8;
+  v |= pool[7];
 
   i=0;
+  j = 8;
   while(i < PASS_b){
-    indx = rand() % PASS_N;
-    if(!used[indx]) {
-      used[indx] = 1;
-
-      c->ind[i] = indx;
-      c->val[indx] = 2 * (digest[4+i] & 1) - 1;
-      i++;
+    if(j >= (HASH_BYTES - 1)) {
+      j = 0;
+      memcpy(hash_state, pool, HASH_BYTES);
+      crypto_hash_sha512(pool, hash_state, HASH_BYTES);
+      continue;
     }
+
+    indx = ((pool[j] << 8) | (pool[j+1]));
+    j += 2;
+
+    if(indx > SAFE_RAND_N) continue;
+
+    indx %= PASS_N;
+
+    if(c->val[indx] != 0) continue;
+
+    c->ind[i] = indx;
+    c->val[indx] = 2 * (v & 0x01) - 1;
+    v >>= 1;
+    i++;
   }
 
   return 0;
 }
-

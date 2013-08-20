@@ -2,10 +2,13 @@
 #define CPASSREF_SIGN_H_
 
 int
+refill_pool();
+
+int
 mknoise(int64 *y);
 
 int
-hash(unsigned char *h, const int64 *eval, const unsigned char *message, const int msglen);
+hash(unsigned char *h, const int64 *eval, const unsigned char *msg_digest);
 
 int
 reject(const int64 *z);

@@ -3,6 +3,10 @@
 
 #define PASS_N 769
 
+#define HASH_BYTES 64
+#define SAFE_RAND_N (65536 - (65536 % PASS_N))
+#define SAFE_RAND_k (65536 - (65536 % (2 * PASS_k + 1)))
+
 #define VALID 0
 #define INVALID 1
 
@@ -37,7 +41,7 @@
 #if PASS_N == 769
 #define PASS_p 862819
 #define PASS_g 754192
-#define PASS_k 32768
+#define PASS_k 32767
 #define PASS_b 29
 #define PASS_t 400
 #define PASS_RADER_POLY "data/769_rader.dat"
