@@ -96,7 +96,7 @@ ntt(int64 *Ff, const int64 *f)
 #else
 
 int
-ntt(int64 *fw, const int64 *w)
+ntt(int64 *Fw, const int64 *w)
 {
   int64 i;
   int64 j;
@@ -110,23 +110,25 @@ ntt(int64 *fw, const int64 *w)
    */
 
   for (i = 0; i < NTT_LEN; i++) {
-    fw[perm[i]] += w[0]; /* Each coefficient of fw gets a w[0] contribution */
+    Fw[perm[i]] += w[0]; /* Each coefficient of Fw gets a w[0] contribution */
 
     if (w[perm[i]] == 0) continue;
 
     for (j = i; j < NTT_LEN; j++) {
-      fw[perm[NTT_LEN-j]] += (w[perm[i]] * nth_roots[j-i]);
+      Fw[perm[NTT_LEN-j]] += (w[perm[i]] * nth_roots[j-i]);
     }
 
     for (j = 0; j < i; j++) {
-      fw[perm[NTT_LEN-j]] += (w[perm[i]] * nth_roots[NTT_LEN+j-i]);
+      Fw[perm[NTT_LEN-j]] += (w[perm[i]] * nth_roots[NTT_LEN+j-i]);
     }
   }
 
-  /* fw[0] (evaluation of w at 1). */
+  /* Fw[0] (evaluation of w at 1). */
   for (i = 0; i < PASS_N; i++) {
-    fw[0] += w[i];
+    Fw[0] += w[i];
   }
+
+  poly_cmod(Fw, PASS_p);
 
   return 0;
 }

@@ -1,14 +1,31 @@
 #ifndef CPASSREF_CONST_H_
 #define CPASSREF_CONST_H_
 
+/* Compile time optioms */
+#ifndef USE_FFTW
+#define USE_FFTW 1
+#endif
+
+#ifndef VERIFY
+#define VERIFY 1
+#endif
+
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+
+/* Return values for verify */
+#define VALID 0
+#define INVALID 1
+
+
+/* Parameters */
 #define PASS_N 769
 
 #define HASH_BYTES 64
 #define SAFE_RAND_N (65536 - (65536 % PASS_N))
 #define SAFE_RAND_k (65536 - (65536 % (2 * PASS_k + 1)))
 
-#define VALID 0
-#define INVALID 1
 
 #if PASS_N == 13
 #define PASS_p 53
