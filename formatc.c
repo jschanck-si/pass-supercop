@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "crypto_hash_sha512.h"
 #include "constants.h"
 #include "pass_types.h"
+#include "hash.h"
 #include "formatc.h"
 
 /* TODO: Standardize a format function */

@@ -16,10 +16,6 @@ static fftwl_real nth_roots[NTT_LEN] = {
 #include PASS_RADER_POLY
   };
 
-static const int64 S[PASS_t] = {
-#include PASS_EVAL_POINTS
-  };
-
 int
 ntt_setup();
 
