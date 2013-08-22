@@ -9,7 +9,7 @@ CFLAGS += -DDEBUG=0
 
 LDFLAGS= -lfftw3l
 
-SOURCES=circonv.c\
+SOURCES=bsparseconv.c\
 		crypto_hash_sha512.c\
 		formatc.c\
 		poly.c\

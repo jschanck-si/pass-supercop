@@ -6,7 +6,7 @@
 #include "pass_types.h"
 #include "poly.h"
 #include "formatc.h"
-#include "circonv.h"
+#include "bsparseconv.h"
 #include "ntt.h"
 #include "hash.h"
 #include "pass.h"
