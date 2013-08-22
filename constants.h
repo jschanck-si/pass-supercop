@@ -70,6 +70,10 @@
 
 
 
+#if (PASS_k) & (PASS_k + 1)
+#error "Parameter k should be one less than a power of two"
+#endif
+
 /* Limit required by mknoise in sign.c */
 #if PASS_k >= 32768
 #error "Parameter k too large."
