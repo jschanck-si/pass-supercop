@@ -20,11 +20,6 @@ main(int argc, char **argv)
   int count;
 
   time_t seed = time(NULL);
-  printf("Generating %d signatures %s\n", TRIALS,
-          VERIFY ? "and verifying" : "and not verifying");
-
-  printf("seed: %ld\n\n", seed);
-  srand(seed);
 
   int64 key[PASS_N];
   int64 *z;
@@ -32,9 +27,18 @@ main(int argc, char **argv)
   unsigned char h[HASH_BYTES];
 
   memset(in, '0', MLEN);
-
   z = malloc(PASS_N * sizeof(int64));
-  ntt_setup();
+
+  if(ntt_setup() == -1) {
+    fprintf(stderr,
+        "ERROR: Could not initialize FFTW. Bad wisdom?\n");
+    exit(EXIT_FAILURE);
+  }
+
+  printf("Generating %d signatures %s\n", TRIALS,
+          VERIFY ? "and verifying" : "and not verifying");
+  printf("seed: %ld\n\n", seed);
+  srand(seed);
 
   gen_key(key);
 
@@ -91,6 +95,7 @@ main(int argc, char **argv)
   printf("\n");
 #endif
 
+  free(z);
   ntt_cleanup();
   return 0;
 }

@@ -24,46 +24,68 @@ int
 ntt_setup() {
 #if USE_FFTW
   fftwl_plan DFTom;
+
+fftwl_real nth_roots[NTT_LEN] = {
+#include PASS_RADER_POLY
+  };
+
   if(!NTT_INITIALIZED) {
-    fftwl_import_wisdom_from_filename(PASS_WISDOM);
+    NTT_INITIALIZED = 1;
 
-    dpoly = (fftwl_real*) fftwl_malloc(sizeof(fftwl_real) * NTT_LEN);
-    nth_roots_dft = (fftwl_complex*) fftwl_malloc(sizeof(fftwl_complex) * NTT_LEN);
-    cpoly = (fftwl_complex*) fftwl_malloc(sizeof(fftwl_complex) * NTT_LEN);
+    if(!fftwl_import_wisdom_from_filename(PASS_WISDOM)) goto error;
 
-    DFTom = fftwl_plan_dft_r2c_1d(NTT_LEN, nth_roots, nth_roots_dft, FFTW_ESTIMATE);
+    dpoly = fftwl_alloc_real(NTT_LEN);
+    if(dpoly == NULL) goto error;
+
+    nth_roots_dft = fftwl_alloc_complex(NTT_LEN);
+    if(nth_roots_dft == NULL) goto error;
+
+    cpoly = fftwl_alloc_complex(NTT_LEN);
+    if(cpoly == NULL) goto error;
+
+    DFTom = fftwl_plan_dft_r2c_1d(NTT_LEN, nth_roots, nth_roots_dft,
+        FFTW_WISDOM_ONLY | FFTW_PATIENT);
+    if(DFTom == NULL) goto error;
+
     fftwl_execute(DFTom);
     fftwl_destroy_plan(DFTom);
 
-    DFT = fftwl_plan_dft_r2c_1d(NTT_LEN, dpoly, cpoly, FFTW_ESTIMATE);
-    iDFT = fftwl_plan_dft_c2r_1d(NTT_LEN, cpoly, dpoly, FFTW_ESTIMATE);
+    DFT = fftwl_plan_dft_r2c_1d(NTT_LEN, dpoly, cpoly,
+        FFTW_WISDOM_ONLY | FFTW_PATIENT);
+    if(DFT == NULL) goto error;
 
-    NTT_INITIALIZED = 1;
+    iDFT = fftwl_plan_dft_c2r_1d(NTT_LEN, cpoly, dpoly,
+        FFTW_WISDOM_ONLY | FFTW_PATIENT);
+    if(DFT == NULL) goto error;
   }
-#else
-    NTT_INITIALIZED = 1;
-#endif
-
   return 0;
+error:
+  ntt_cleanup();
+  return -1;
+
+#else
+  NTT_INITIALIZED = 1;
+  return 0;
+#endif
 }
 
 int
 ntt_cleanup() {
 #if USE_FFTW
   if(NTT_INITIALIZED) {
+    NTT_INITIALIZED = 0;
     fftwl_destroy_plan(DFT);
     fftwl_destroy_plan(iDFT);
     fftwl_free(dpoly);
     fftwl_free(cpoly);
     fftwl_free(nth_roots_dft);
-    fftwl_forget_wisdom();
-    NTT_INITIALIZED = 0;
+    fftwl_cleanup();
   }
-#else
-    NTT_INITIALIZED = 0;
-#endif
-
   return 0;
+#else
+  NTT_INITIALIZED = 0;
+  return 0;
+#endif
 }
 
 #if USE_FFTW

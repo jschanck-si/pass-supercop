@@ -12,10 +12,6 @@ static const int64 perm[NTT_LEN+1] = {
     , 1
   };
 
-static fftwl_real nth_roots[NTT_LEN] = {
-#include PASS_RADER_POLY
-  };
-
 int
 ntt_setup();
 

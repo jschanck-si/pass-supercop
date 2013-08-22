@@ -1,7 +1,7 @@
 CC=gcc
 
 CFLAGS += -c
-CFLAGS += -Wall -Wno-unused-variable
+CFLAGS += -Wall
 CFLAGS += -O2 -ffast-math -m64
 CFLAGS += -DUSE_FFTW=1
 CFLAGS += -DVERIFY=1
