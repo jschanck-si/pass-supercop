@@ -2,7 +2,7 @@
 #define CPASSREF_SIGN_H_
 
 int
-refill_pool();
+gen_key(int64 *f);
 
 int
 mknoise(int64 *y);
