@@ -52,8 +52,8 @@ verify(const unsigned char *h, const int64 *z, const int64 *pubkey,
   ntt(Fc, c.val);
   ntt(Fz, z);
 
-  for(i=0; i<PASS_N; i++) {
-    Fz[i] -= Fc[i] * pubkey[i];
+  for(i=0; i<PASS_t; i++) {
+    Fz[S[i]] -= Fc[S[i]] * pubkey[S[i]];
   }
 
   poly_cmod(Fz, PASS_p);
