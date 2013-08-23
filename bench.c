@@ -30,9 +30,20 @@
 #include "ntt.h"
 #include "pass.h"
 
-#define TRIALS 10000
+#define TRIALS 100000
 
 #define MLEN 48
+
+
+static __inline__ unsigned long long rdtsc(void);
+
+static __inline__ unsigned long long rdtsc(void)
+{
+  unsigned hi, lo;
+  __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+  return ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
+}
+
 
 int
 main(int argc, char **argv)
@@ -80,16 +91,20 @@ main(int argc, char **argv)
 #endif
 
   clock_t c0,c1;
+  unsigned long long rdtsc0, rdtsc1;
   c0 = clock();
 
   count = 0;
+  rdtsc0 = rdtsc();
   for(i=0; i<TRIALS; i++) {
    snprintf((char *)in, sizeof(long int), "%d", rand());
    count += sign(h, z, key, in, MLEN);
+
 #if VERIFY
    nbver += (VALID == verify(h, z, pubkey, in, MLEN));
 #endif
   }
+  rdtsc1 = rdtsc();
   printf("\n");
 
   c1 = clock();
@@ -99,6 +114,7 @@ main(int argc, char **argv)
 #endif
   printf("Attempts/sig: %f\n",  (((float)count)/TRIALS));
   printf("Time/sig: %fs\n", (float) (c1 - c0)/(TRIALS*CLOCKS_PER_SEC));
+  printf("Average cycles per signature: %Lf\n", ((long double)rdtsc1 - rdtsc0)/TRIALS);
 
 #if DEBUG
   printf("\n\nKey: ");
