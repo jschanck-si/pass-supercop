@@ -33,49 +33,49 @@
 static int NTT_INITIALIZED = 0;
 
 #if USE_FFTW
-static fftwl_plan DFT;
-static fftwl_plan iDFT;
+static fftw_plan DFT;
+static fftw_plan iDFT;
 
-static fftwl_real *dpoly = NULL;
-static fftwl_complex *cpoly = NULL;
-static fftwl_complex *nth_roots_dft = NULL;
+static fftw_real *dpoly = NULL;
+static fftw_complex *cpoly = NULL;
+static fftw_complex *nth_roots_dft = NULL;
 #endif
 
 int
 ntt_setup() {
 #if USE_FFTW
-  fftwl_plan DFTom;
+  fftw_plan DFTom;
 
-fftwl_real nth_roots[NTT_LEN] = {
+fftw_real nth_roots[NTT_LEN] = {
 #include PASS_RADER_POLY
   };
 
   if(!NTT_INITIALIZED) {
     NTT_INITIALIZED = 1;
 
-    if(!fftwl_import_wisdom_from_filename(PASS_WISDOM)) goto error;
+    if(!fftw_import_wisdom_from_filename(PASS_WISDOM)) goto error;
 
-    dpoly = fftwl_alloc_real(NTT_LEN);
+    dpoly = fftw_alloc_real(NTT_LEN);
     if(dpoly == NULL) goto error;
 
-    nth_roots_dft = fftwl_alloc_complex(NTT_LEN);
+    nth_roots_dft = fftw_alloc_complex(NTT_LEN);
     if(nth_roots_dft == NULL) goto error;
 
-    cpoly = fftwl_alloc_complex(NTT_LEN);
+    cpoly = fftw_alloc_complex(NTT_LEN);
     if(cpoly == NULL) goto error;
 
-    DFTom = fftwl_plan_dft_r2c_1d(NTT_LEN, nth_roots, nth_roots_dft,
+    DFTom = fftw_plan_dft_r2c_1d(NTT_LEN, nth_roots, nth_roots_dft,
         FFTW_WISDOM_ONLY | FFTW_PATIENT);
     if(DFTom == NULL) goto error;
 
-    fftwl_execute(DFTom);
-    fftwl_destroy_plan(DFTom);
+    fftw_execute(DFTom);
+    fftw_destroy_plan(DFTom);
 
-    DFT = fftwl_plan_dft_r2c_1d(NTT_LEN, dpoly, cpoly,
+    DFT = fftw_plan_dft_r2c_1d(NTT_LEN, dpoly, cpoly,
         FFTW_WISDOM_ONLY | FFTW_PATIENT);
     if(DFT == NULL) goto error;
 
-    iDFT = fftwl_plan_dft_c2r_1d(NTT_LEN, cpoly, dpoly,
+    iDFT = fftw_plan_dft_c2r_1d(NTT_LEN, cpoly, dpoly,
         FFTW_WISDOM_ONLY | FFTW_PATIENT);
     if(DFT == NULL) goto error;
   }
@@ -95,12 +95,12 @@ ntt_cleanup() {
 #if USE_FFTW
   if(NTT_INITIALIZED) {
     NTT_INITIALIZED = 0;
-    fftwl_destroy_plan(DFT);
-    fftwl_destroy_plan(iDFT);
-    fftwl_free(dpoly);
-    fftwl_free(cpoly);
-    fftwl_free(nth_roots_dft);
-    fftwl_cleanup();
+    fftw_destroy_plan(DFT);
+    fftw_destroy_plan(iDFT);
+    fftw_free(dpoly);
+    fftw_free(cpoly);
+    fftw_free(nth_roots_dft);
+    fftw_cleanup();
   }
   return 0;
 #else
@@ -116,19 +116,19 @@ ntt(int64 *Ff, const int64 *f)
   int i;
 
   for(i=0; i<NTT_LEN; i++){
-    dpoly[i] = (fftwl_real) f[perm[i]];
+    dpoly[i] = (fftw_real) f[perm[i]];
   }
 
-  fftwl_execute(DFT); /* dpoly -> cpoly */
+  fftw_execute(DFT); /* dpoly -> cpoly */
 
   for(i=0;i<(NTT_LEN/2)+1; i++){
     cpoly[i] *= nth_roots_dft[i];
   }
 
-  fftwl_execute(iDFT); /* cpoly -> dpoly */
+  fftw_execute(iDFT); /* cpoly -> dpoly */
 
   for(i=0; i<NTT_LEN; i++) {
-    Ff[perm[NTT_LEN-i]] = f[0] + rintl(dpoly[i]/NTT_LEN);
+    Ff[perm[NTT_LEN-i]] = f[0] + rint(dpoly[i]/NTT_LEN);
   }
 
   poly_cmod(Ff, PASS_p);

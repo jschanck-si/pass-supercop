@@ -2,12 +2,13 @@ CC=gcc
 
 CFLAGS += -c
 CFLAGS += -Wall
-CFLAGS += -O2 -ffast-math -m64
+CFLAGS += -O3 -ffast-math -mtune=native -malign-double
 CFLAGS += -DUSE_FFTW=1
 CFLAGS += -DVERIFY=1
 CFLAGS += -DDEBUG=0
 
-LDFLAGS= -lfftw3l
+LDFLAGS = -lfftw3
+
 
 SOURCES=bsparseconv.c\
 		crypto_hash_sha512.c\

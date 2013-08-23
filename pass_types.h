@@ -19,10 +19,6 @@
  *  along with CPASSREF.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Dependencies:
-      constants.h
-*/
-
 #ifndef CPASSREF_TYPES_H_
 #define CPASSREF_TYPES_H_
 
@@ -30,7 +26,7 @@
 
 typedef int64_t int64;
 typedef uint64_t uint64;
-typedef long double fftwl_real;
+typedef double fftw_real;
 
 typedef struct {
   unsigned int ind[PASS_b];
