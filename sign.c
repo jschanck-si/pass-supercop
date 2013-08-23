@@ -66,7 +66,8 @@ reject(const int64 *z)
 }
 
 int
-sign(unsigned char *h, int64 *z, const int64 *key, const unsigned char *message, const int msglen)
+sign(unsigned char *h, int64 *z, const int64 *key,
+    const unsigned char *message, const int msglen)
 {
   int count;
   b_sparse_poly c;
@@ -108,7 +109,8 @@ sign(unsigned char *h, int64 *z, const int64 *key, const unsigned char *message,
 
   printf("\n\nc: ");
   for(i=0; i<PASS_b; i++)
-    printf("(%lld, %lld) ", (long long int) c.ind[i], (long long int) c.val[c.ind[i]]);
+    printf("(%lld, %lld) ", (long long int) c.ind[i],
+        (long long int) c.val[c.ind[i]]);
   printf("\n");
 #endif
 
