@@ -128,7 +128,7 @@ ntt(int64 *Ff, const int64 *f)
   fftw_execute(iDFT); /* cpoly -> dpoly */
 
   for(i=0; i<NTT_LEN; i++) {
-    Ff[perm[NTT_LEN-i]] = f[0] + rint(dpoly[i]/NTT_LEN);
+    Ff[perm[NTT_LEN-i]] = f[0] + llrint(dpoly[i]/NTT_LEN);
   }
 
   poly_cmod(Ff, PASS_p);

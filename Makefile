@@ -7,7 +7,7 @@ CFLAGS += -DUSE_FFTW=1
 CFLAGS += -DVERIFY=1
 CFLAGS += -DDEBUG=0
 
-LDFLAGS = -lfftw3
+LDFLAGS = -lfftw3 -lm
 
 
 SOURCES=bsparseconv.c\
