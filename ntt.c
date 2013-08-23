@@ -131,7 +131,7 @@ ntt(int64 *Ff, const int64 *f)
     Ff[perm[NTT_LEN-i]] = f[0] + llrint(dpoly[i]/NTT_LEN);
   }
 
-  poly_cmod(Ff, PASS_p);
+  poly_cmod(Ff);
 
   return 0;
 }
@@ -171,7 +171,7 @@ ntt(int64 *Fw, const int64 *w)
     Fw[0] += w[i];
   }
 
-  poly_cmod(Fw, PASS_p);
+  poly_cmod(Fw);
 
   return 0;
 }

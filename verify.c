@@ -56,7 +56,7 @@ verify(const unsigned char *h, const int64 *z, const int64 *pubkey,
     Fz[S[i]] -= Fc[S[i]] * pubkey[S[i]];
   }
 
-  poly_cmod(Fz, PASS_p);
+  poly_cmod(Fz);
 
   crypto_hash_sha512(msg_digest, message, msglen);
   hash(h2, Fz, msg_digest);

@@ -24,21 +24,17 @@
 #include "poly.h"
 
 int
-poly_cmod(int64 *a, int64 q)
+poly_cmod(int64 *a)
 {
   int64 i;
-  int64 tmp;
-  int64 qo2 = (q-1)/2;
   for (i=0; i<PASS_N; i++) {
-    tmp = a[i];
-    if (tmp >= 0) {
-      tmp %= q;
+    if (a[i] >= 0) {
+      a[i] %= PASS_p;
     } else {
-      tmp = q - ((-tmp) % q);
+      a[i] = PASS_p + (a[i] % PASS_p);
     }
-    if (tmp > qo2)
-      tmp -= q;
-    a[i] = tmp;
+    if (a[i] > ((PASS_p-1)/2))
+      a[i] -= PASS_p;
   }
 
   return 0;
