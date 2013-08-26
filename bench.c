@@ -32,10 +32,8 @@
 
 #define TRIALS 100000
 
-#define MLEN 48
+#define MLEN 256
 
-
-static __inline__ unsigned long long rdtsc(void);
 
 static __inline__ unsigned long long rdtsc(void)
 {
@@ -51,15 +49,15 @@ main(int argc, char **argv)
   int i;
   int count;
 
-  time_t seed = time(NULL);
-
   int64 key[PASS_N];
   int64 *z;
-  unsigned char in[MLEN];
+  unsigned char in[MLEN+1] = {0};
   unsigned char h[HASH_BYTES];
 
   memset(in, '0', MLEN);
   z = malloc(PASS_N * sizeof(int64));
+
+  init_fast_prng();
 
   if(ntt_setup() == -1) {
     fprintf(stderr,
@@ -69,8 +67,6 @@ main(int argc, char **argv)
 
   printf("Generating %d signatures %s\n", TRIALS,
           VERIFY ? "and verifying" : "and not verifying");
-  printf("seed: %ld\n\n", seed);
-  srand(seed);
 
   gen_key(key);
 
@@ -97,7 +93,7 @@ main(int argc, char **argv)
   count = 0;
   rdtsc0 = rdtsc();
   for(i=0; i<TRIALS; i++) {
-   snprintf((char *)in, sizeof(long int), "%d", rand());
+   in[(i&0xff)]++; /* Hash a different message each time */
    count += sign(h, z, key, in, MLEN);
 
 #if VERIFY
@@ -121,10 +117,12 @@ main(int argc, char **argv)
   for(i=0; i<PASS_N; i++)
     printf("%lld, ", ((long long int) key[i]));
 
+  #if VERIFY
   printf("\n\nPubkey: ");
   for(i=0; i<PASS_N; i++)
     printf("%lld, ", ((long long int) pubkey[i]));
   printf("\n");
+  #endif
 
   printf("\n\nz: ");
   for(i=0; i<PASS_N; i++)

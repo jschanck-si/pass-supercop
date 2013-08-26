@@ -33,6 +33,9 @@ int
 gen_pubkey(int64 *pkey, int64 *skey);
 
 int
+init_fast_prng();
+
+int
 mknoise(int64 *y);
 
 int

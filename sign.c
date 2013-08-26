@@ -30,10 +30,25 @@
 #include "bsparseconv.h"
 #include "ntt.h"
 #include "hash.h"
+#include "fastrandombytes.h"
 #include "pass.h"
 
 
 #define CLEAR(f) memset((f), 0, PASS_N*sizeof(int64))
+
+#define RAND_LEN (4096)
+
+static uint16 randpool[RAND_LEN];
+static int randpos;
+
+int
+init_fast_prng()
+{
+  fastrandombytes((unsigned char*)randpool, RAND_LEN*sizeof(uint16));
+  randpos = 0;
+
+  return 0;
+}
 
 int
 mknoise(int64 *y)
@@ -41,7 +56,11 @@ mknoise(int64 *y)
   int i = 0;
   int x;
   while(i < PASS_N) {
-    x = rand() & (2*PASS_k + 1); // Should be power of 2 - 1...
+    if(randpos == RAND_LEN) {
+      fastrandombytes((unsigned char*)randpool, RAND_LEN*sizeof(uint16));
+      randpos = 0;
+    }
+    x = randpool[randpos++] & (2*PASS_k + 1); // Should be power of 2 - 1...
 
     if(x == SAFE_RAND_k) continue;
 

@@ -19,6 +19,9 @@ SOURCES=bsparseconv.c\
 		key.c\
 		sign.c\
 		verify.c\
+		crypto_stream.c\
+		randombytes.c\
+		fastrandombytes.c\
 		bench.c
 
 OBJECTS=$(SOURCES:.c=.o)

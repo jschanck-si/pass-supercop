@@ -24,19 +24,28 @@
 #include "constants.h"
 #include "pass_types.h"
 #include "ntt.h"
+#include "randombytes.h"
 #include "pass.h"
 
 int
 gen_key(int64 *f)
 {
   int i = 0;
+  int j = 0;
   unsigned int r = 0;
+  uint64 key[64];
+  randombytes((unsigned char*)key, 64*sizeof(uint64));
+
   while(i < PASS_N) {
-    if(!r) r = (unsigned int) rand();
+    if(j == PASS_N) {
+      randombytes((unsigned char*)key, 64*sizeof(uint64));
+      j = 0;
+    }
+    if(!r) r = key[j++];
     switch(r & 0x03) {
-      case 0: f[i] = -1; break;
-      case 1: f[i] =  0; break;
-      case 2: f[i] =  1; break;
+      case 1: f[i] = -1; break;
+      case 2: f[i] =  0; break;
+      case 3: f[i] =  1; break;
       default:  r >>= 2; continue;
     }
     r >>= 2;
