@@ -50,32 +50,6 @@
 #define SAFE_RAND_k (65536 - (65536 % (2 * PASS_k + 1)))
 
 
-#if PASS_N == 13
-#define PASS_p 53
-#define PASS_g 16
-#define PASS_k 31
-#define PASS_b 2
-#define PASS_t 6
-#define PASS_RADER_POLY "data/13_rader.dat"
-#define PASS_PERMUTATION "data/13_perm.dat"
-#define PASS_EVAL_POINTS "data/13_points.dat"
-#define PASS_WISDOM "data/12_wisdom.dat"
-#endif
-
-
-
-#if PASS_N == 563
-#define PASS_p 429007
-#define PASS_g 17693
-#define PASS_k 16383
-#define PASS_b 24
-#define PASS_t 274
-#define PASS_RADER_POLY "data/563_rader.dat"
-#define PASS_PERMUTATION "data/563_perm.dat"
-#define PASS_EVAL_POINTS "data/563_points.dat"
-#define PASS_WISDOM "data/562_wisdom_single.dat"
-#endif
-
 #if PASS_N == 433
 #define PASS_p 775937
 #define PASS_g 268673
@@ -110,7 +84,7 @@
 #define PASS_RADER_POLY "data/769_rader.dat"
 #define PASS_PERMUTATION "data/769_perm.dat"
 #define PASS_EVAL_POINTS "data/769_points.dat"
-#define PASS_WISDOM "data/768_wisdom_single.dat"
+#define PASS_WISDOM "data/768_wisdom.dat"
 #endif
 
 
@@ -127,6 +101,7 @@
 #endif
 
 
+/* Basic parameter checks */
 
 #if (PASS_k) & (PASS_k + 1)
 #error "Parameter k should be one less than a power of two"

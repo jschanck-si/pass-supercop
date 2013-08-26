@@ -77,7 +77,7 @@ fftw_real nth_roots[NTT_LEN] = {
 
     iDFT = fftw_plan_dft_c2r_1d(NTT_LEN, cpoly, dpoly,
         FFTW_WISDOM_ONLY | FFTW_PATIENT);
-    if(DFT == NULL) goto error;
+    if(iDFT == NULL) goto error;
   }
   return 0;
 error:
