@@ -144,6 +144,10 @@ ntt(int64 *Fw, const int64 *w)
   int64 i;
   int64 j;
 
+int64 nth_roots[NTT_LEN] = {
+#include PASS_RADER_POLY
+  };
+
   /* Rader DFT: Length N-1 convolution of w (permuted according to
    * PASS_PERMUTATION) and the vector [g, g^2, g^3, ... g^N-1].
    *
