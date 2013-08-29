@@ -65,6 +65,9 @@ main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
+  printf("Parameters:\n\t N: %d, p: %d, g: %d, k: %d, b: %d, t: %d\n\n",
+      PASS_N, PASS_p, PASS_g, PASS_k, PASS_b, PASS_t);
+
   printf("Generating %d signatures %s\n", TRIALS,
           VERIFY ? "and verifying" : "and not verifying");
 
