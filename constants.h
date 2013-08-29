@@ -75,28 +75,51 @@
 #endif
 
 
+// #if PASS_N == 769
+// #define PASS_p 862819
+// #define PASS_g 754192
+// #define PASS_k 32767
+// #define PASS_b 29
+// #define PASS_t 400
+// #define PASS_RADER_POLY "data/769_rader.dat"
+// #define PASS_PERMUTATION "data/769_perm.dat"
+// #define PASS_EVAL_POINTS "data/769_points.dat"
+// #define PASS_WISDOM "data/768_wisdom.dat"
+// #endif
+
 #if PASS_N == 769
-#define PASS_p 862819
-#define PASS_g 754192
+#define PASS_p 1047379
+#define PASS_g 421722
 #define PASS_k 32767
 #define PASS_b 29
-#define PASS_t 400
-#define PASS_RADER_POLY "data/769_rader.dat"
-#define PASS_PERMUTATION "data/769_perm.dat"
-#define PASS_EVAL_POINTS "data/769_points.dat"
+#define PASS_t 386
+#define PASS_RADER_POLY "data/769_2_rader.dat"
+#define PASS_PERMUTATION "data/769_2_perm.dat"
+#define PASS_EVAL_POINTS "data/769_2_points.dat"
 #define PASS_WISDOM "data/768_wisdom.dat"
 #endif
 
+//#if PASS_N == 1153
+//#define PASS_p 968521
+//#define PASS_g 56574
+//#define PASS_k 32767
+//#define PASS_b 36
+//#define PASS_t 600
+//#define PASS_RADER_POLY "data/1153_rader.dat"
+//#define PASS_PERMUTATION "data/1153_perm.dat"
+//#define PASS_EVAL_POINTS "data/1153_points.dat"
+//#define PASS_WISDOM "data/1152_wisdom.dat"
+//#endif
 
 #if PASS_N == 1153
-#define PASS_p 968521
+#define PASS_p 1044619
 #define PASS_g 56574
 #define PASS_k 32767
 #define PASS_b 36
-#define PASS_t 600
-#define PASS_RADER_POLY "data/1153_rader.dat"
-#define PASS_PERMUTATION "data/1153_perm.dat"
-#define PASS_EVAL_POINTS "data/1153_points.dat"
+#define PASS_t 580
+#define PASS_RADER_POLY "data/1153_2_rader.dat"
+#define PASS_PERMUTATION "data/1153_2_perm.dat"
+#define PASS_EVAL_POINTS "data/1153_2_points.dat"
 #define PASS_WISDOM "data/1152_wisdom.dat"
 #endif
 
