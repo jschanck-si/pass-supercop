@@ -37,6 +37,13 @@ def znprimroot(p): # For small p (< 1M)
     return a
 
 
+def cmod(v, p):
+    mx = (p-1)/2;
+    for i in range(len(v)):
+        if(v[i] > mx):
+            v[i] -= p;
+    return v
+
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         usage()
@@ -49,7 +56,7 @@ if __name__ == "__main__":
     gN = znprimroot(N)
 
     perm = [pow(gN, i, N) for i in [0] + range(N-2, 0, -1)]
-    poly = [pow(gp, i, p) for i in [perm[0]] + perm[-1:0:-1]]
+    poly = cmod([pow(gp, i, p) for i in [perm[0]] + perm[-1:0:-1]], p)
     points = random.sample(range(1, ((N-1)/2) + 1), (t/2))
     points += [N - i for i in points]
     points.sort()
