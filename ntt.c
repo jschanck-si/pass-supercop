@@ -41,9 +41,9 @@ static fftw_complex *cpoly = NULL;
 static fftw_complex *nth_roots_dft = NULL;
 #endif
 
+#if USE_FFTW
 int
 ntt_setup() {
-#if USE_FFTW
   fftw_plan DFTom;
 
 fftw_real nth_roots[NTT_LEN] = {
@@ -83,16 +83,10 @@ fftw_real nth_roots[NTT_LEN] = {
 error:
   ntt_cleanup();
   return -1;
-
-#else
-  NTT_INITIALIZED = 1;
-  return 0;
-#endif
 }
 
 int
 ntt_cleanup() {
-#if USE_FFTW
   if(NTT_INITIALIZED) {
     NTT_INITIALIZED = 0;
     fftw_destroy_plan(DFT);
@@ -103,13 +97,8 @@ ntt_cleanup() {
     fftw_cleanup();
   }
   return 0;
-#else
-  NTT_INITIALIZED = 0;
-  return 0;
-#endif
 }
 
-#if USE_FFTW
 int
 ntt(int64 *Ff, const int64 *f)
 {
@@ -136,7 +125,20 @@ ntt(int64 *Ff, const int64 *f)
   return 0;
 }
 
-#else
+#else /* Not using FFTW */
+
+int
+
+ntt_setup() {
+  NTT_INITIALIZED = 1;
+  return 0;
+}
+
+int
+ntt_cleanup() {
+  NTT_INITIALIZED = 0;
+  return 0;
+}
 
 int
 ntt(int64 *Fw, const int64 *w)
