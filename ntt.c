@@ -19,6 +19,10 @@
  *  along with CPASSREF.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef USE_FFTW
+#define USE_FFTW 1
+#endif
+
 #if USE_FFTW
 #include <complex.h>
 #include <math.h>

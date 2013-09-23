@@ -30,7 +30,13 @@
 #include "ntt.h"
 #include "pass.h"
 
+#ifndef VERIFY
+#define VERIFY 1
+#endif
+
+#ifndef TRIALS
 #define TRIALS 10000
+#endif
 
 #define MLEN 256
 

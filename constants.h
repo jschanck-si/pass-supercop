@@ -22,33 +22,10 @@
 #ifndef CPASSREF_CONST_H_
 #define CPASSREF_CONST_H_
 
-/* Default compile time optioms */
-#ifndef USE_FFTW
-#define USE_FFTW 1
-#endif
-
-#ifndef VERIFY
-#define VERIFY 1
-#endif
-
-#ifndef DEBUG
-#define DEBUG 0
-#endif
-
-
-/* Return values for verify */
-#define VALID 0
-#define INVALID (-1)
-
-
 /* Parameters */
 #ifndef PASS_N
 #define PASS_N 769
 #endif
-
-#define SAFE_RAND_N (65536 - (65536 % PASS_N))
-#define SAFE_RAND_k (65536 - (65536 % (2 * PASS_k + 1)))
-
 
 #if PASS_N == 433
 #define PASS_p 775937
@@ -100,8 +77,11 @@
 #endif
 
 
-/* Basic parameter checks */
+#define SAFE_RAND_N (65536 - (65536 % PASS_N))
+#define SAFE_RAND_k (65536 - (65536 % (2 * PASS_k + 1)))
 
+
+/* Basic parameter checks */
 #if (PASS_k) & (PASS_k + 1)
 #error "Parameter k should be one less than a power of two"
 #endif

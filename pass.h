@@ -22,6 +22,12 @@
 #ifndef CPASSREF_PASS_H_
 #define CPASSREF_PASS_H_
 
+
+/* Return values for verify */
+#define VALID 0
+#define INVALID (-1)
+
+
 static const int64 S[PASS_t] = {
 #include PASS_EVAL_POINTS
   };
