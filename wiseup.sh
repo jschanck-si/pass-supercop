@@ -1,22 +1,25 @@
 #!/bin/bash
 
-OUT="$(mktemp)"
+DEST=./data/$1_wisdom.dat
+N=$1
 
 factors=( $(factor $1) )
 if [ -z "${factors[2]}" ]
 then
-    echo "Sure you didn't mean $(($1-1))?"
-    exit
+    N=$(($N-1))
 fi
 
-echo "Generating FFTW wisdom for PASS-$(($1+1)) and storing it in data/$1_wisdom.dat"
+echo "Generating FFTW wisdom for transform length $N and storing it in data/$1_wisdom.dat"
 
-fftw-wisdom --exhaustive rof$1 rob$1 > $OUT
-
-if [ $? -eq 0 ]
+if [ -e $DEST ]
 then
-    mv -i $OUT ./data/$1_wisdom.dat
+    read -p "$DEST exists. Overwrite? " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        fftw-wisdom --exhaustive rof$1 rob$1 > $DEST
+    fi
 else
-    rm $OUT
+    fftw-wisdom --exhaustive rof$1 rob$1 > $DEST
 fi
 
