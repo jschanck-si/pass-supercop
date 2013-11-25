@@ -52,6 +52,7 @@ static fftw_complex *nth_roots_dft = NULL;
 #if USE_FFTW
 int
 ntt_setup() {
+  int i;
   fftw_plan DFTom;
 
 fftw_real nth_roots[NTT_LEN] = {
@@ -78,6 +79,9 @@ fftw_real nth_roots[NTT_LEN] = {
 
     fftw_execute(DFTom);
     fftw_destroy_plan(DFTom);
+
+    for(i=0; i<NTT_LEN; i++)
+      nth_roots_dft[i] /= NTT_LEN;
 
     DFT = fftw_plan_dft_r2c_1d(NTT_LEN, dpoly, cpoly,
         FFTW_WISDOM_ONLY | FFTW_PATIENT);
@@ -125,7 +129,7 @@ ntt(int64 *Ff, const int64 *f)
   fftw_execute(iDFT); /* cpoly -> dpoly */
 
   for(i=0; i<NTT_LEN; i++) {
-    Ff[perm[NTT_LEN-i]] = f[0] + llrint(dpoly[i]/NTT_LEN);
+    Ff[perm[NTT_LEN-i]] = f[0] + llrint(dpoly[i]);
   }
 
   poly_cmod(Ff);
