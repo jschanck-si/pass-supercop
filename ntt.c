@@ -20,7 +20,9 @@
 */
 
 #ifndef USE_FFTW
+#ifndef USE_KARATSUBA
 #define USE_FFTW 1
+#endif
 #endif
 
 #if USE_FFTW
@@ -28,6 +30,8 @@
 #include <math.h>
 #include <fftw3.h>
 #endif
+
+#include <string.h>
 
 #include "constants.h"
 #include "pass_types.h"
@@ -129,10 +133,131 @@ ntt(int64 *Ff, const int64 *f)
   return 0;
 }
 
+#elif USE_KARATSUBA
+
+int
+ntt_setup() {
+  NTT_INITIALIZED = 1;
+  return 0;
+}
+
+int
+ntt_cleanup() {
+  NTT_INITIALIZED = 0;
+  return 0;
+}
+
+
+/* Space efficient Karatsuba multiplication.
+ * See: Thomé, "Karatsuba multiplication with temporary space of size \le n"
+ * http://www.loria.fr/~thome/files/kara.pdf
+ *
+ * Note: Inputs should be of smooth length with many 2's. (i.e. 2^u*3^v)
+ */
+static int
+karatsuba(int64 *res, int64 *tmp, const int64 *a, const int64 *b, const int64 k)
+{
+  /* Assumes k is even */
+  int64 i;
+  int64 j;
+  const int64 p = k>>1;
+
+  /* Grade school multiplication for small / odd inputs */
+  if(k <= 36 || k%2 != 0) {
+    memset(res, 0, 2*k*sizeof(int64));
+    for(i=0; i<k; i++) {
+      if(a[i] == 0) continue;
+      for(j=0; j<k; j++) {
+        res[i+j] += a[i]*b[j];
+      }
+    }
+
+    return 0;
+  }
+
+  /* res = [[c = al - ah]/p [d = bl - bh]/p [__]/2p] */
+  /* tmp = [[__]/2p] */
+  for(i=0; i<p; i++){
+    res[i] = a[i] - a[i+p];
+    res[i+p] = b[i+p] - b[i];
+  }
+
+  /* res = [[c]/p [d]/p [__]/2p] */
+  /* tmp = [[c*d]/2p] */
+  karatsuba(tmp, res+k, res, res+p, p);
+
+  /* res = [[__]/p [__]/p [h = H{a}*H{b}]/2p] */
+  /* tmp = [[c*d]/2p] */
+  karatsuba(res+k,res,a+p,b+p,p);
+
+  /* res = [[__]/p [__]/p [h]/2p] */
+  /* tmp = [[L{c*d} L{h}]/p [H{c*d} + H{h}]/p] */
+  for(i=0; i<k; i++) {
+    tmp[i] += res[k+i];
+  }
+
+  /* res = [[__]/p [L{c*d} + L{h}]/p [h]/2p] */
+  /* tmp = [[L{c*d} L{h}]/p [H{c*d} + H{h}]/p] */
+  memcpy(res+p,tmp,p*sizeof(int64));
+
+  /* res = [[__]/p [L{c*d} + L{h}]/p [L{h} + H{c*d} + H{h}]/p [H{h}]/p] */
+  /* tmp = [[L{c*d} L{h}]/p [H{c*d} + H{h}]/p] */
+  for(i=0; i<p; i++) {
+    res[k+i] += tmp[p+i];
+  }
+
+  /* res = [[__]/p [L{c*d} + L{h}]/p [L{h} + H{c*d} + H{h}]/p [H{h}]/p] */
+  /* tmp = [[l = L{a}*L{b}]/2p] */
+  karatsuba(tmp,res,a,b,p);
+
+  /* res = [[L{l}]/p [L{c*d} + L{h}]/p [L{h} + H{c*d} + H{h}]/p [H{h}]/p] */
+  /* tmp = [[L{l}]/p [H{l}]/p] */
+  memcpy(res,tmp,p*sizeof(int64));
+
+  /* res = [[L{l}]/p [H{l} + L{c*d} + L{h}]/p [L{h} + H{c*d} + H{h}]/p [H{h}]/p] */
+  /* tmp = [[L{l}]/p [H{l}]/p] */
+  for(i=0; i<p; i++) {
+    res[p+i] += tmp[i] + tmp[p+i];
+  }
+
+  /* res = [[L{l}]/p [H{l} + L{l} + L{h} + L{c*d}]/p [L{h} + H{l} + H{h} + H{c*d}]/p [H{h}]/p]
+         = [[L{l}]/p [H{l} + L{a}*H{b} + L{b}*H{a} + L{h}]/2p [H{h}]/p]
+     tmp = [[L{L{a}*L{b}}]/p [H{L{a}*L{b}}]/p] */
+  for(i=p; i<k; i++) {
+    res[p+i] += tmp[i];
+  }
+
+  return 0;
+}
+
+int
+ntt(int64 *Fw, const int64 *w)
+{
+  int64 i;
+  int64 res[2*NTT_LEN];
+  int64 tmp[NTT_LEN];
+  int64 a[NTT_LEN];
+
+  const int64 nth_roots[NTT_LEN] = {
+#include PASS_RADER_POLY
+    };
+
+  for(i=0; i<NTT_LEN; i++){
+    a[i] = w[perm[i]];
+  }
+
+  karatsuba(res, tmp, a, nth_roots, NTT_LEN);
+
+  for(i=0; i<NTT_LEN; i++) {
+    Fw[perm[NTT_LEN-i]] = cmod(w[0] + res[i] + res[i+NTT_LEN]);
+  }
+
+  return 0;
+}
+
 #else /* Not using FFTW */
 
 int
-
 ntt_setup() {
   NTT_INITIALIZED = 1;
   return 0;

@@ -28,14 +28,23 @@ poly_cmod(int64 *a)
 {
   int64 i;
   for (i=0; i<PASS_N; i++) {
-    if (a[i] >= 0) {
-      a[i] %= PASS_p;
-    } else {
-      a[i] = PASS_p + (a[i] % PASS_p);
-    }
-    if (a[i] > ((PASS_p-1)/2))
-      a[i] -= PASS_p;
+    a[i] = cmod(a[i]);
   }
 
   return 0;
 }
+
+inline int64
+cmod(int64 a)
+{
+  if (a >= 0) {
+    a %= PASS_p;
+  } else {
+    a = PASS_p + (a % PASS_p);
+  }
+  if (a > ((PASS_p-1)/2))
+    a -= PASS_p;
+
+  return a;
+}
+

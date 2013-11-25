@@ -25,4 +25,7 @@
 int
 poly_cmod(int64 *a);
 
+inline int64
+cmod(int64 a);
+
 #endif
