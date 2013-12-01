@@ -2,10 +2,9 @@ CC=gcc
 
 CFLAGS += -c
 CFLAGS += -Wall
-CFLAGS += -O3 -ffast-math -mtune=native -malign-double
+CFLAGS += -O3 -ffast-math -mtune=native
 
-LDFLAGS = -lfftw3 -lm
-
+LDFLAGS = -lm
 
 SOURCES=bsparseconv.c\
 		crypto_hash_sha512.c\
@@ -24,20 +23,7 @@ SOURCES=bsparseconv.c\
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=bench
 
-PARAMSETS=433 577 769 1153
-
-all: wisdom data $(SOURCES) $(EXECUTABLE)
-
-vpath %.dat data
-wisdom: $(addsuffix _wisdom.dat, $(PARAMSETS))
-%_wisdom.dat :
-	./wiseup.sh $*
-
-data: $(addsuffix _rader.dat, $(PARAMSETS))
-data: $(addsuffix _perm.dat, $(PARAMSETS))
-data: $(addsuffix _points.dat, $(PARAMSETS))
-%_rader.dat %_points.dat %_perm.dat:
-	$(warning Runtime data for set $* not present ($@). See README.)
+all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS) 
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
