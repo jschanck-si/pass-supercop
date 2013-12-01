@@ -60,9 +60,9 @@ mknoise(int64 *y)
       fastrandombytes((unsigned char*)randpool, RAND_LEN*sizeof(uint16));
       randpos = 0;
     }
-    x = randpool[randpos++] & (2*PASS_k + 1); // Should be power of 2 - 1...
-
-    if(x == SAFE_RAND_k) continue;
+    x = randpool[randpos++];
+    if(x >= SAFE_RAND_k) continue;
+    x &= (2*PASS_k + 1);
 
     y[i] = x - PASS_k;
     i++;
@@ -77,7 +77,7 @@ reject(const int64 *z)
   int i;
 
   for(i=0; i<PASS_N; i++) {
-    if(abs(z[i]) > (PASS_k - PASS_b))
+    if(llabs(z[i]) > (PASS_k - PASS_b))
       return 1;
   }
 
@@ -85,20 +85,23 @@ reject(const int64 *z)
 }
 
 int
-sign(unsigned char *h, int64 *z, const int64 *key,
-    const unsigned char *message, const int msglen)
+crypto_sign_pass769_ref(
+    unsigned char *sm, unsigned long long *smlen,
+    const unsigned char *m, unsigned long long mlen,
+    const unsigned char *sk)
 {
-  int count;
+  int i;
   b_sparse_poly c;
   int64 y[PASS_N];
   int64 Fy[PASS_N];
+  uint16 zi;
   unsigned char msg_digest[HASH_BYTES];
+  unsigned char h[HASH_BYTES];
 
-  crypto_hash_sha512(msg_digest, message, msglen);
+  crypto_hash_sha512(msg_digest, m, mlen);
 
-  count = 0;
   do {
-    CLEAR(Fy);
+    //CLEAR(Fy);
 
     mknoise(y);
     ntt(Fy, y);
@@ -108,33 +111,23 @@ sign(unsigned char *h, int64 *z, const int64 *key,
     formatc(&c, h);
 
     /* z = y += f*c */
-    bsparseconv(y, key, &c);
+    bsparseconv(y, (const char *)sk, &c);
     /* No modular reduction required. */
 
-    count++;
   } while (reject(y));
 
-#if DEBUG
-  int i;
-  printf("\n\ny: ");
-  for(i=0; i<PASS_N; i++)
-    printf("%lld, ", ((long long int) y[i]));
-  printf("\n");
+  memcpy(sm, h, HASH_BYTES);
+  *smlen = HASH_BYTES;
 
-  printf("\n\nFy: ");
-  for(i=0; i<PASS_N; i++)
-    printf("%lld, ", ((long long int) Fy[i]));
-  printf("\n");
+  for(i=0; i<PASS_N; i++) {
+    zi = y[i] + (1<<15);
+    sm[HASH_BYTES + 2*i] = (zi >> 8);
+    sm[HASH_BYTES + 2*i + 1] = (zi & 0xff);
+  }
+  *smlen += 2*PASS_N;
 
-  printf("\n\nc: ");
-  for(i=0; i<PASS_b; i++)
-    printf("(%lld, %lld) ", (long long int) c.ind[i],
-        (long long int) c.val[c.ind[i]]);
-  printf("\n");
-#endif
+  memcpy(sm+(*smlen), m, mlen);
+  *smlen += mlen;
 
-  memcpy(z, y, PASS_N*sizeof(int64));
-
-  return count;
+  return 0;
 }
-

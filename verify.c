@@ -33,15 +33,28 @@
 #define CLEAR(f) memset((f), 0, PASS_N*sizeof(int64))
 
 int
-verify(const unsigned char *h, const int64 *z, const int64 *pubkey,
-    const unsigned char *message, const int msglen)
+crypto_sign_pass769_ref_open(
+    unsigned char *m, unsigned long long *mlen,
+    const unsigned char *sm, unsigned long long smlen,
+    const unsigned char *pk)
 {
   int i;
   b_sparse_poly c;
-  int64 Fc[PASS_N] = {0};
-  int64 Fz[PASS_N] = {0};
+  int64 Fc[PASS_N];
+  int64 Fz[PASS_N];
+  int64 z[PASS_N];
+  uint16 zi;
+
+  const unsigned char *h = sm;
+
   unsigned char msg_digest[HASH_BYTES];
   unsigned char h2[HASH_BYTES];
+
+  for(i=0; i<PASS_N; i++) {
+    zi = ((uint16) *(sm+HASH_BYTES+2*i))<<8;
+    zi += ((uint16) *(sm+HASH_BYTES+2*i+1));
+    z[i] = (int64) zi - (1<<15);
+  }
 
   if(reject(z))
     return INVALID;
@@ -53,12 +66,12 @@ verify(const unsigned char *h, const int64 *z, const int64 *pubkey,
   ntt(Fz, z);
 
   for(i=0; i<PASS_t; i++) {
-    Fz[S[i]] -= Fc[S[i]] * pubkey[S[i]];
+    Fz[S[i]] -= Fc[S[i]] * ((int32 *)pk)[i];
   }
 
   poly_cmod(Fz);
 
-  crypto_hash_sha512(msg_digest, message, msglen);
+  crypto_hash_sha512(msg_digest, m, *mlen);
   hash(h2, Fz, msg_digest);
 
   for(i=0; i<HASH_BYTES; i++) {
@@ -68,4 +81,3 @@ verify(const unsigned char *h, const int64 *z, const int64 *pubkey,
 
   return VALID;
 }
-

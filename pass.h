@@ -33,12 +33,6 @@ static const int64 S[PASS_t] = {
   };
 
 int
-gen_key(int64 *f);
-
-int
-gen_pubkey(int64 *pkey, int64 *skey);
-
-int
 init_fast_prng();
 
 int
@@ -47,12 +41,21 @@ mknoise(int64 *y);
 int
 reject(const int64 *z);
 
-int
-sign(unsigned char *h, int64 *z, const int64 *key,
-    const unsigned char *message, const int msglen);
 
-int
-verify(const unsigned char *h, const int64 *z, const int64 *pubkey,
-    const unsigned char *message, const int msglen);
+int crypto_sign_pass769_ref_keypair(
+   unsigned char *pk, unsigned char *sk
+ );
+
+int crypto_sign_pass769_ref(
+   unsigned char *sm,unsigned long long *smlen,
+   const unsigned char *m,unsigned long long mlen,
+   const unsigned char *sk
+ );
+
+int crypto_sign_pass769_ref_open(
+   unsigned char *m,unsigned long long *mlen,
+   const unsigned char *sm,unsigned long long smlen,
+   const unsigned char *pk
+ );
 
 #endif

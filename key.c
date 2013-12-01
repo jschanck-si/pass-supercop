@@ -30,13 +30,15 @@
 
 #define RAND_LEN (64)
 
-int
-gen_key(int64 *f)
+int crypto_sign_pass769_ref_keypair(unsigned char *pk, unsigned char *sk)
 {
   int i = 0;
   int j = 0;
   uint64 r = 0;
   uint64 pool[RAND_LEN];
+  int64 Ff[PASS_N];
+  int64 f[PASS_N];
+
   randombytes((unsigned char*)pool, RAND_LEN*sizeof(uint64));
 
   while(i < PASS_N) {
@@ -51,22 +53,16 @@ gen_key(int64 *f)
       case 3: f[i] =  1; break;
       default:  r >>= 2; continue;
     }
+    sk[i] = (char) f[i];
     r >>= 2;
     i++;
   }
 
-  return 0;
-}
-
-int
-gen_pubkey(int64 *pkey, int64 *skey)
-{
-  int i;
-  int64 Ff[PASS_N] = {0};
-  ntt(Ff, skey);
+  ntt((int64 *)Ff, f);
   for(i=0; i<PASS_t; i++)
-    pkey[S[i]] = Ff[S[i]];
+    ((int32 *)pk)[i] = (int32) Ff[S[i]];
 
-  return 0;
+
+
+ return 0;
 }
-

@@ -23,8 +23,9 @@
 #include "pass_types.h"
 #include "bsparseconv.h"
 
+/* Computes c += a*b for a sparse trinary polynomial b */
 int
-bsparseconv (int64 *c, const int64 *a, const b_sparse_poly *b)
+bsparseconv (int64 *c, const char *a, const b_sparse_poly *b)
 {
   int64 i = 0;
   int64 j = 0;

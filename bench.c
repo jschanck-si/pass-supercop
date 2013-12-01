@@ -24,6 +24,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "api.h"
 #include "constants.h"
 #include "pass_types.h"
 #include "hash.h"
@@ -35,100 +36,56 @@
 #endif
 
 #ifndef TRIALS
-#define TRIALS 10000
+#define TRIALS 1000
 #endif
 
-#define MLEN 256
+#define MLEN 64
 
 
 int
 main(int argc, char **argv)
 {
   int i;
-  int count;
 
-  int64 key[PASS_N];
-  int64 *z;
-  unsigned char in[MLEN+1] = {0};
-  unsigned char h[HASH_BYTES];
+  unsigned char in[MLEN];
+  unsigned char sm[TRIALS * (CRYPTO_BYTES + MLEN)];
+  unsigned long long smlen;
 
-  memset(in, '0', MLEN);
-  z = malloc(PASS_N * sizeof(int64));
+  unsigned long long mlen = MLEN;
+
+  unsigned char sk[CRYPTO_SECRETKEYBYTES];
+  unsigned char pk[CRYPTO_PUBLICKEYBYTES];
+
+  memset(in, '0', mlen);
 
   init_fast_prng();
 
-  if(ntt_setup() == -1) {
-    fprintf(stderr,
-        "ERROR: Could not initialize FFTW. Bad wisdom?\n");
-    exit(EXIT_FAILURE);
-  }
-
-  printf("Parameters:\n\t N: %d, p: %d, g: %d, k: %d, b: %d, t: %d\n\n",
-      PASS_N, PASS_p, PASS_g, PASS_k, PASS_b, PASS_t);
-
-  printf("Generating %d signatures %s\n", TRIALS,
-          VERIFY ? "and verifying" : "and not verifying");
-
-  gen_key(key);
-
-#if DEBUG
-  printf("sha512(key): ");
-  crypto_hash_sha512(h, (unsigned char*)key, sizeof(int64)*PASS_N);
-  for(i=0; i<HASH_BYTES; i++) {
-    printf("%.2x", h[i]);
-  }
-  printf("\n");
-#endif
-
-#if VERIFY
-  int nbver = 0;
-
-  int64 pubkey[PASS_N] = {0};
-  gen_pubkey(pubkey, key);
-#endif
+  crypto_sign_pass769_ref_keypair(pk, sk);
 
   clock_t c0,c1;
   c0 = clock();
-
-  count = 0;
   for(i=0; i<TRIALS; i++) {
-   in[(i&0xff)]++; /* Hash a different message each time */
-   count += sign(h, z, key, in, MLEN);
-
-#if VERIFY
-   nbver += (VALID == verify(h, z, pubkey, in, MLEN));
-#endif
+   in[(i&0x3f)]++; /* Hash a different message each time */
+   mlen = MLEN;
+   crypto_sign_pass769_ref(sm+i*(CRYPTO_BYTES + MLEN), &smlen, in, mlen, sk);
   }
-  printf("\n");
-
   c1 = clock();
-  printf("Total attempts: %d\n",  count);
-#if VERIFY
-  printf("Valid signatures: %d/%d\n",  nbver, TRIALS);
-#endif
-  printf("Attempts/sig: %f\n",  (((float)count)/TRIALS));
+
+  printf("\n");
   printf("Time/sig: %fs\n", (float) (c1 - c0)/(TRIALS*CLOCKS_PER_SEC));
 
-#if DEBUG
-  printf("\n\nKey: ");
-  for(i=0; i<PASS_N; i++)
-    printf("%lld, ", ((long long int) key[i]));
+  memset(in, '0', mlen);
+  c0 = clock();
+  for(i=0; i<TRIALS; i++) {
+   in[(i&0x3f)]++; /* Hash a different message each time */
+   mlen = MLEN;
+   if(VALID != crypto_sign_pass769_ref_open(in, &mlen, sm+i*(CRYPTO_BYTES + MLEN), smlen, pk))
+     exit(1);
+  }
+  c1 = clock();
 
-  #if VERIFY
-  printf("\n\nPubkey: ");
-  for(i=0; i<PASS_N; i++)
-    printf("%lld, ", ((long long int) pubkey[i]));
-  printf("\n");
-  #endif
+  printf("Time/ver: %fs\n", (float) (c1 - c0)/(TRIALS*CLOCKS_PER_SEC));
 
-  printf("\n\nz: ");
-  for(i=0; i<PASS_N; i++)
-    printf("%lld, ", ((long long int) z[i]));
-  printf("\n");
-#endif
-
-  free(z);
-  ntt_cleanup();
   return 0;
 }
 
