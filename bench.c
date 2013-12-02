@@ -36,7 +36,7 @@
 #endif
 
 #ifndef TRIALS
-#define TRIALS 1000
+#define TRIALS 10000
 #endif
 
 #define MLEN 64
@@ -48,7 +48,7 @@ main(int argc, char **argv)
   int i;
 
   unsigned char in[MLEN];
-  unsigned char sm[TRIALS * (CRYPTO_BYTES + MLEN)];
+  unsigned char *sm; //[TRIALS * (CRYPTO_BYTES + MLEN)];
   unsigned long long smlen;
 
   unsigned long long mlen = MLEN;
@@ -56,18 +56,18 @@ main(int argc, char **argv)
   unsigned char sk[CRYPTO_SECRETKEYBYTES];
   unsigned char pk[CRYPTO_PUBLICKEYBYTES];
 
+  sm = (unsigned char *) malloc(TRIALS * (CRYPTO_BYTES + MLEN));
+
   memset(in, '0', mlen);
 
-  init_fast_prng();
-
-  crypto_sign_pass769_ref_keypair(pk, sk);
+  crypto_sign_keypair(pk, sk);
 
   clock_t c0,c1;
   c0 = clock();
   for(i=0; i<TRIALS; i++) {
    in[(i&0x3f)]++; /* Hash a different message each time */
    mlen = MLEN;
-   crypto_sign_pass769_ref(sm+i*(CRYPTO_BYTES + MLEN), &smlen, in, mlen, sk);
+   crypto_sign(sm+i*(CRYPTO_BYTES + MLEN), &smlen, in, mlen, sk);
   }
   c1 = clock();
 
@@ -79,13 +79,14 @@ main(int argc, char **argv)
   for(i=0; i<TRIALS; i++) {
    in[(i&0x3f)]++; /* Hash a different message each time */
    mlen = MLEN;
-   if(VALID != crypto_sign_pass769_ref_open(in, &mlen, sm+i*(CRYPTO_BYTES + MLEN), smlen, pk))
+   if(VALID != crypto_sign_open(in, &mlen, sm+i*(CRYPTO_BYTES + MLEN), smlen, pk))
      exit(1);
   }
   c1 = clock();
 
   printf("Time/ver: %fs\n", (float) (c1 - c0)/(TRIALS*CLOCKS_PER_SEC));
 
+  free(sm);
   return 0;
 }
 

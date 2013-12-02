@@ -42,17 +42,17 @@ int
 reject(const int64 *z);
 
 
-int crypto_sign_pass769_ref_keypair(
+int crypto_sign_keypair(
    unsigned char *pk, unsigned char *sk
  );
 
-int crypto_sign_pass769_ref(
+int crypto_sign(
    unsigned char *sm,unsigned long long *smlen,
    const unsigned char *m,unsigned long long mlen,
    const unsigned char *sk
  );
 
-int crypto_sign_pass769_ref_open(
+int crypto_sign_open(
    unsigned char *m,unsigned long long *mlen,
    const unsigned char *sm,unsigned long long smlen,
    const unsigned char *pk

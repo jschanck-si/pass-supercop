@@ -20,8 +20,7 @@ void fastrandombytes(unsigned char *r, unsigned long long rlen)
     randombytes(key, crypto_stream_salsa20_KEYBYTES);
     init = 1;
   }
-  crypto_stream(r,rlen,nonce,key);
-  //crypto_stream_salsa20(r,rlen,nonce,key);
+  crypto_stream_salsa20(r,rlen,nonce,key);
 
   // Increase 64-bit counter (nonce)
   for(i=0;i<8;i++)

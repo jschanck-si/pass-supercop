@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "crypto_sign.h"
+
 #include "constants.h"
 #include "pass_types.h"
 #include "poly.h"
@@ -38,54 +40,45 @@
 
 #define RAND_LEN (4096)
 
+
 static uint16 randpool[RAND_LEN];
-static int randpos;
+static int randpos = RAND_LEN;
 
 int
-init_fast_prng()
-{
-  fastrandombytes((unsigned char*)randpool, RAND_LEN*sizeof(uint16));
-  randpos = 0;
-
-  return 0;
-}
-
-int
-mknoise(int64 *y)
+crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
 {
   int i = 0;
-  int x;
+  uint16 r = 0;
+  int64 Ff[PASS_N];
+  int64 f[PASS_N];
+
   while(i < PASS_N) {
-    if(randpos == RAND_LEN) {
+    if(randpos >= RAND_LEN) {
       fastrandombytes((unsigned char*)randpool, RAND_LEN*sizeof(uint16));
       randpos = 0;
     }
-    x = randpool[randpos++];
-    if(x >= SAFE_RAND_k) continue;
-    x &= (2*PASS_k + 1);
-
-    y[i] = x - PASS_k;
+    if(!r) r = randpool[randpos++];
+    switch(r & 0x03) {
+      case 1: f[i] = -1; break;
+      case 2: f[i] =  0; break;
+      case 3: f[i] =  1; break;
+      default:  r >>= 2; continue;
+    }
+    sk[i] = (char) f[i];
+    r >>= 2;
     i++;
   }
 
-  return 0;
-}
-
-int
-reject(const int64 *z)
-{
-  int i;
-
-  for(i=0; i<PASS_N; i++) {
-    if(llabs(z[i]) > (PASS_k - PASS_b))
-      return 1;
-  }
+  ntt((int64 *)Ff, f);
+  for(i=0; i<PASS_t; i++)
+    ((int32 *)pk)[i] = (int32) Ff[S[i]];
 
   return 0;
 }
 
+
 int
-crypto_sign_pass769_ref(
+crypto_sign(
     unsigned char *sm, unsigned long long *smlen,
     const unsigned char *m, unsigned long long mlen,
     const unsigned char *sk)
@@ -131,3 +124,94 @@ crypto_sign_pass769_ref(
 
   return 0;
 }
+
+int
+crypto_sign_open(
+    unsigned char *m, unsigned long long *mlen,
+    const unsigned char *sm, unsigned long long smlen,
+    const unsigned char *pk)
+{
+  int i;
+  b_sparse_poly c;
+  int64 Fc[PASS_N];
+  int64 Fz[PASS_N];
+  int64 z[PASS_N];
+  uint16 zi;
+
+  const unsigned char *h = sm;
+
+  unsigned char msg_digest[HASH_BYTES];
+  unsigned char h2[HASH_BYTES];
+
+  *mlen = smlen - crypto_sign_BYTES;
+
+  for(i=0; i<PASS_N; i++) {
+    zi = ((uint16) *(sm+HASH_BYTES+2*i))<<8;
+    zi += ((uint16) *(sm+HASH_BYTES+2*i+1));
+    z[i] = (int64) zi - (1<<15);
+  }
+
+  if(reject(z))
+    return INVALID;
+
+  CLEAR(c.val);
+  formatc(&c, h);
+
+  ntt(Fc, c.val);
+  ntt(Fz, z);
+
+  for(i=0; i<PASS_t; i++) {
+    Fz[S[i]] -= Fc[S[i]] * ((int32 *)pk)[i];
+  }
+
+  poly_cmod(Fz);
+
+  crypto_hash_sha512(msg_digest, sm+crypto_sign_BYTES, *mlen);
+  hash(h2, Fz, msg_digest);
+
+  for(i=0; i<HASH_BYTES; i++) {
+    if(h2[i] != h[i])
+      return INVALID;
+  }
+
+  for(i=0; i<*mlen; i++) {
+    m[i] = sm[i + crypto_sign_BYTES];
+  }
+
+  return VALID;
+}
+
+int
+mknoise(int64 *y)
+{
+  int i = 0;
+  int x;
+  while(i < PASS_N) {
+    if(randpos >= RAND_LEN) {
+      fastrandombytes((unsigned char*)randpool, RAND_LEN*sizeof(uint16));
+      randpos = 0;
+    }
+    x = randpool[randpos++];
+    if(x >= SAFE_RAND_k) continue;
+    x &= (2*PASS_k + 1);
+
+    y[i] = x - PASS_k;
+    i++;
+  }
+
+  return 0;
+}
+
+int
+reject(const int64 *z)
+{
+  int i;
+
+  for(i=0; i<PASS_N; i++) {
+    if(llabs(z[i]) > (PASS_k - PASS_b))
+      return 1;
+  }
+
+  return 0;
+}
+

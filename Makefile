@@ -12,9 +12,7 @@ SOURCES=bsparseconv.c\
 		poly.c\
 		hash.c\
 		ntt.c\
-		key.c\
 		sign.c\
-		verify.c\
 		crypto_stream.c\
 		randombytes.c\
 		fastrandombytes.c\
