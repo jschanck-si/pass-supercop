@@ -192,7 +192,7 @@ mknoise(int64 *y)
       randpos = 0;
     }
     x = randpool[randpos++];
-    if(x >= SAFE_RAND_k) continue;
+    if(x >= UNSAFE_RAND_k) continue;
     x &= (2*PASS_k + 1);
 
     y[i] = x - PASS_k;
