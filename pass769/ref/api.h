@@ -1,6 +1,5 @@
-/* Edit for specific parameter set */
-#define CRYPTO_SECRETKEYBYTES // ceil(N/4)
-#define CRYPTO_PUBLICKEYBYTES // t * 4
-#define CRYPTO_BYTES // N * 2 + 64
+#define CRYPTO_SECRETKEYBYTES 193
+#define CRYPTO_PUBLICKEYBYTES 1544
+#define CRYPTO_BYTES 1602
 
-#define CRYPTO_VERSION //
+#define CRYPTO_VERSION "1.0k"
