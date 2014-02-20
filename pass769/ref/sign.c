@@ -48,23 +48,34 @@ int
 crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
 {
   int i = 0;
+  int j = 0;
+  int p = 6;
   uint16 r = 0;
   int64 Ff[PASS_N];
   int64 f[PASS_N];
 
+  sk[0] = 0;
   while(i < PASS_N) {
     if(randpos >= RAND_LEN) {
       fastrandombytes((unsigned char*)randpool, RAND_LEN*sizeof(uint16));
       randpos = 0;
     }
     if(!r) r = randpool[randpos++];
-    switch(r & 0x03) {
-      case 1: f[i] = -1; break;
-      case 2: f[i] =  0; break;
-      case 3: f[i] =  1; break;
-      default:  r >>= 2; continue;
+    if((r & 3) == 0) {
+      r >>= 2;
+      continue;
     }
-    sk[i] = (char) f[i];
+
+    f[i] = (r & 3);
+    sk[j] += (r & 3) << p;
+    if(p == 0) {
+      j += 1;
+      p = 6;
+      sk[j] = 0;
+    } else {
+      p -= 2;
+    }
+
     r >>= 2;
     i++;
   }
@@ -76,6 +87,29 @@ crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
   return 0;
 }
 
+void
+sk_unpack(char *un, const unsigned char *packed)
+{
+  int i;
+  int j;
+  j = 0;
+  for(i=0; (i+3)<PASS_N; i+=4) {
+    un[i] = ((char) ((packed[j] >> 6) & 3)) - 2;
+    un[i+1] = ((char) ((packed[j] >> 4) & 3)) - 2;
+    un[i+2] = ((char) ((packed[j] >> 2) & 3)) - 2;
+    un[i+3] = ((char) (packed[j] & 3)) - 2;
+    j += 1;
+  }
+
+  /* N is odd i.e. equiv 1 or 3 mod 4 */
+  if((PASS_N - i) == 1) {
+    un[PASS_N-1] = ((char) ((packed[j] >> 6) & 3)) - 2;
+  } else {
+    un[PASS_N-3] = ((char) ((packed[j] >> 6) & 3)) - 2;
+    un[PASS_N-2] = ((char) ((packed[j] >> 4) & 3)) - 2;
+    un[PASS_N-1] = ((char) ((packed[j] >> 2) & 3)) - 2;
+  }
+}
 
 int
 crypto_sign(
@@ -87,11 +121,15 @@ crypto_sign(
   b_sparse_poly c;
   int64 y[PASS_N];
   int64 Fy[PASS_N];
+  char f[PASS_N];
+
   uint16 zi;
   unsigned char msg_digest[HASH_BYTES];
   unsigned char h[HASH_BYTES];
 
   crypto_hash_sha512(msg_digest, m, mlen);
+
+  sk_unpack(f, sk);
 
   do {
     //CLEAR(Fy);
@@ -104,7 +142,7 @@ crypto_sign(
     formatc(&c, h);
 
     /* z = y += f*c */
-    bsparseconv(y, (const char *)sk, &c);
+    bsparseconv(y, f, &c);
     /* No modular reduction required. */
 
   } while (reject(y));
