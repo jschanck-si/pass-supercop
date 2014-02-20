@@ -29,6 +29,7 @@
 #define PASS_k 32767
 #define PASS_b 29
 #define PASS_t 386
+#define PASS_pad 768
 #define PASS_RADER_POLY "data/769_rader.dat"
 #define PASS_PERMUTATION "data/769_perm.dat"
 #define PASS_EVAL_POINTS "data/769_points.dat"

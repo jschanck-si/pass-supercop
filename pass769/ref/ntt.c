@@ -26,7 +26,7 @@
 #include "poly.h"
 #include "ntt.h"
 
-static const int64 nth_roots[NTT_LEN] = {
+static const int64 nth_roots[PASS_pad] = {
 #include PASS_RADER_POLY
     };
 
@@ -130,15 +130,18 @@ int
 ntt(int64 *Fw, const int64 *w)
 {
   int64 i;
-  int64 res[2*NTT_LEN];
-  int64 tmp[NTT_LEN];
-  int64 a[NTT_LEN];
+  int64 res[2*PASS_pad];
+  int64 tmp[PASS_pad];
+  int64 a[PASS_pad];
 
   for(i=0; i<NTT_LEN; i++){
     a[i] = w[perm[i]];
   }
+  for(i=NTT_LEN; i<PASS_pad; i++){
+    a[i] = 0;
+  }
 
-  karatsuba(res, tmp, a, nth_roots, NTT_LEN);
+  karatsuba(res, tmp, a, nth_roots, PASS_pad);
 
   for(i=0; i<NTT_LEN; i++) {
     Fw[perm[NTT_LEN-i]] = cmod(w[0] + res[i] + res[i+NTT_LEN]);
