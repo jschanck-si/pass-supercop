@@ -35,23 +35,6 @@ static const int64 perm[NTT_LEN+1] = {
   , 1};
 
 
-static int
-basecase_mul(int64 *res, int64 *tmp, const int64 *a, const int64 *b, const int64 k)
-{
-  int64 i;
-  int64 j;
-
-  memset(res, 0, 2*k*sizeof(int64));
-  for(i=0; i<k; i++) {
-    if(a[i] == 0) continue;
-    for(j=i; j<k+i; j++) {
-      res[j] += a[i]*b[j-i];
-    }
-  }
-
-  return 0;
-}
-
 /* Space efficient Karatsuba multiplication.
  * See: Thomé, "Karatsuba multiplication with temporary space of size \le n"
  * http://www.loria.fr/~thome/files/kara.pdf
@@ -63,11 +46,19 @@ karatsuba(int64 *res, int64 *tmp, const int64 *a, const int64 *b, const int64 k)
 {
   /* Assumes k is even */
   int64 i;
+  int64 j;
   const int64 p = k>>1;
 
   /* Grade school multiplication for small / odd inputs */
-  if(k <= 24) {
-    basecase_mul(res, tmp, a, b, k);
+  if(k <= 38 || k%2 != 0) {
+    memset(res, 0, 2*k*sizeof(int64));
+    for(i=0; i<k; i++) {
+      if(a[i] == 0) continue;
+      for(j=0; j<k; j++) {
+        res[i+j] += a[i]*b[j];
+      }
+    }
+
     return 0;
   }
 
