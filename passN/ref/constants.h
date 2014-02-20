@@ -23,6 +23,7 @@
 #define CPASSREF_CONST_H_
 
 /* Parameters */
+#if 0
 #define PASS_N 769
 #define PASS_p 1047379
 #define PASS_g 421722
@@ -33,6 +34,7 @@
 #define PASS_RADER_POLY "data/769_rader.dat"
 #define PASS_PERMUTATION "data/769_perm.dat"
 #define PASS_EVAL_POINTS "data/769_points.dat"
+#endif
 
 #define UNSAFE_RAND_N (65536 - (65536 % PASS_N))
 #define UNSAFE_RAND_k (65536 - (65536 % (2 * PASS_k + 1)))
